@@ -85,6 +85,19 @@ You can also execute client code with the given command:
 docker exec -it zkp-client-1 python -m app.main
 ```
 
+Expected output:
+
+```bash
+File Checksum: 25f9bb92967a0015d6609940f30c7b96aa95dcc2a1db45db5f5f8b4a18908026
+Client Public Key: 1
+File uploaded successfully. Unique ID: b283d023-222b-4778-a178-239951ed5072
+Client Proof: r=58, commitment=253, challenge=80, response=250
+Generated Proof: {'commitment': 253, 'response': 250}
+Proof verified successfully.
+{'status': 'Proof verified successfully.'}
+Proof verification succeeded.
+```
+
 ### 5. Server Operations
 
 The server will automatically start and run in the background when the `docker compose up` command is executed.
