@@ -79,15 +79,15 @@ python -m app.main
 
 This will execute the `main.py` file inside the `client/app` directory and start the process of uploading a file and generating a proof.
 
-### 5. Server Operations
-
-The server will automatically start and run in the background when the `docker compose up` command is executed.
-
 You can also execute client code with the given command:
 
 ```bash
 docker exec -it zkp-client-1 python -m app.main
 ```
+
+### 5. Server Operations
+
+The server will automatically start and run in the background when the `docker compose up` command is executed.
 
 You can access logs from the server to monitor the status of the server:
 
