@@ -5,10 +5,9 @@ services:
       dockerfile: ./server/Dockerfile
     volumes:
       - ./server:/app
-      - ./server/test.db:/app/test.db  # Mount SQLite database file
+      - ./server/test.db:/app/test.db  
     ports:
       - "8000:8000"
-    # Removed the dependency from client
 
   client:
     build:
@@ -16,5 +15,4 @@ services:
       dockerfile: ./client/Dockerfile
     volumes:
       - ./client:/app
-    # Removed the dependency on server here
 

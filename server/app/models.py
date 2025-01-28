@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from app.database import Base  # This won't cause a circular import anymore
+from app.database import Base
 
 class ClientData(Base):
     __tablename__ = "client_data"

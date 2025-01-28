@@ -26,7 +26,7 @@ def verify_proof(unique_id: str, proof: dict) -> bool:
     """Verify the proof with the server."""
     response = requests.post(
         f"{settings.SERVER_URL}/verify-proof/",
-        json={"id": unique_id, "proof": proof}  # Send proof as JSON
+        json={"id": unique_id, "proof": proof}  
     )
     
     if response.status_code == 200:

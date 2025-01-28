@@ -5,10 +5,8 @@ from app.config import settings
 
 app = FastAPI()
 
-# Ensure the database and tables are created on startup
 create_database()
 
-# Include routes
 app.include_router(router)
 
 if __name__ == "__main__":

@@ -8,7 +8,6 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-# Initialize ZKP instance
 zkp_server = ZKP()
 server_public_key = zkp_server.generate_public_key()
 
@@ -19,11 +18,9 @@ async def upload_csv(file: UploadFile, public_key: str = Form(...)):
     """
     unique_id = str(uuid.uuid4())
     try:
-        # Save file and calculate checksum
         file_path = save_file(file, unique_id)
         checksum = calculate_checksum(file_path)
 
-        # Store checksum and client's public key in the database
         db = SessionLocal()
         crud.add_client_data(db, unique_id, checksum, int(public_key))
 

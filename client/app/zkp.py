@@ -8,7 +8,7 @@ class ZKP:
         self.prime = settings.ZKP_PRIME
         self.generator = settings.ZKP_GENERATOR
         if seed is not None:
-            secrets.token_bytes = lambda n: secrets.token_bytes(n)  # deterministic seed for repeatability
+            secrets.token_bytes = lambda n: secrets.token_bytes(n)
 
     def generate_public_key(self) -> int:
         """Generate the public key based on the secret."""
@@ -16,10 +16,9 @@ class ZKP:
 
     def generate_proof(self, checksum: str) -> dict:
         """Generate a Zero-Knowledge Proof for the given checksum."""
-        r = secrets.randbelow(self.prime - 1)  # Ensure r is deterministic for each run
+        r = secrets.randbelow(self.prime - 1)  
         commitment = pow(self.generator, r, self.prime)
 
-        # Calculate challenge using checksum and commitment
         challenge = int(hashlib.sha256(f"{checksum}{commitment}".encode()).hexdigest(), 16) % self.prime
         response = (r + challenge * self.secret) % self.prime
 
