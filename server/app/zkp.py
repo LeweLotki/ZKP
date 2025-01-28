@@ -1,49 +1,59 @@
 import hashlib
-from typing import Dict
-from .config import settings
-import logging
+import secrets
+from app.config import settings
 
-logger = logging.getLogger(__name__)
+class ZKP:
+    def __init__(self, secret: int = None):
+        # Use secret or generate a random secret based on the prime
+        self.secret = secret or secrets.randbelow(settings.ZKP_PRIME - 1)
+        self.prime = settings.ZKP_PRIME
+        self.generator = settings.ZKP_GENERATOR
 
-def verify_proof(y: int, checksum: str, proof: dict) -> bool:
-    """
-    Verify the Zero-Knowledge Proof provided by the client.
+    def generate_public_key(self) -> int:
+        """Generate the public key based on the secret."""
+        return pow(self.generator, self.secret, self.prime)
 
-    Args:
-        y (int): The client's public key.
-        checksum (str): The checksum of the uploaded file.
-        proof (dict): The proof containing 'commitment' and 'response'.
+    def generate_proof(self, checksum: str) -> dict:
+        """
+        Generate a Zero-Knowledge Proof (ZKP) for the given checksum.
+        
+        Returns:
+            A dictionary containing the commitment, response, and public_key.
+        """
+        r = secrets.randbelow(self.prime - 1)  # Ensure r is within [1, p-1]
+        commitment = pow(self.generator, r, self.prime)  # t = g^r mod p
 
-    Returns:
-        bool: True if the proof is valid, False otherwise.
-    """
-    commitment = proof.get("commitment")
-    response = proof.get("response")
-    
-    if commitment is None or response is None:
-        logger.debug("Proof is missing 'commitment' or 'response'.")
-        return False
+        # Calculate challenge using checksum and commitment
+        challenge = int(hashlib.sha256(f"{checksum}{commitment}".encode()).hexdigest(), 16) % self.prime
 
-    # Compute the challenge c = Hash(checksum || commitment) mod p
-    # Ensure consistent byte representation
-    data = f"{checksum}{commitment}".encode()
-    challenge = int(hashlib.sha256(data).hexdigest(), 16) % settings.ZKP_PRIME
-    logger.debug(f"Computed challenge: {challenge} (Hash: {hashlib.sha256(data).hexdigest()})")
+        # Calculate response using r and challenge
+        response = (r + challenge * self.secret) % self.prime
 
-    # Compute expected_commitment = g^s * y^{-c} mod p
-    try:
-        y_inverse_c = pow(y, -challenge, settings.ZKP_PRIME)
-    except ValueError:
-        # If y and p are not coprime, inverse does not exist
-        logger.debug("Modular inverse does not exist.")
-        return False
+        print(f"Server Proof: r={r}, commitment={commitment}, challenge={challenge}, response={response}")
+        return {"commitment": commitment, "response": response}
 
-    expected_commitment = (pow(settings.ZKP_GENERATOR, response, settings.ZKP_PRIME) * y_inverse_c) % settings.ZKP_PRIME
-    logger.debug(f"Computed expected_commitment: {expected_commitment}")
+    def verify_proof(self, public_key: int, checksum: str, proof: dict) -> bool:
+        """
+        Verify the Zero-Knowledge Proof (ZKP).
+        """
+        commitment = proof["commitment"] % self.prime
+        response = proof["response"] % self.prime
 
-    # Compare with the provided commitment
-    verification_result = commitment == expected_commitment
-    logger.debug(f"Verification result: {verification_result}")
+        # Calculate challenge using checksum and commitment
+        challenge = int(hashlib.sha256(f"{checksum}{commitment}".encode()).hexdigest(), 16) % self.prime
 
-    return verification_result
+        print(f"Server Verification: commitment={commitment}, response={response}, challenge={challenge}")
+
+        try:
+            # Compute expected commitment: t' = (g^s mod p) * (y^(-c) mod p) mod p
+            expected_commitment = (
+                pow(self.generator, response, self.prime) *
+                pow(public_key, self.prime - 1 - challenge, self.prime)  # Modular inverse
+            ) % self.prime
+            print(f"Expected Commitment: {expected_commitment}")
+        except ValueError as e:
+            print(f"Error in modular arithmetic: {e}")
+            return False
+
+        return commitment == expected_commitment
 

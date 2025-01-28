@@ -3,3 +3,4 @@ uploads/
 *.log
 *.vim
 venv/
+test.db
