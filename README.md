@@ -1,7 +1,4 @@
-# Studio projektowe - raport
 # Zero Knowledge Prove do walidacji Big Data
-### Artur Stefańczyk 406645
-### Łukasz Kołodziej
 
 ### Jak działa protokół Schnorra?
 
